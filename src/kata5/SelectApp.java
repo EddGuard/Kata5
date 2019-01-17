@@ -9,6 +9,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 /**
  *
@@ -27,21 +28,33 @@ public class SelectApp {
         }
         return conn;
     }
+    @SuppressWarnings("empty-statement")
     public void selectAll(){
-        String sql = "SELECT * FROM PEOPLE";
+        String sql = "DROP TABLE IF EXISTS EMAIL";
+        String sql2 = "CREATE TABLE IF NOT EXISTS EMAIL (ID int NOT NULL PRIMARY KEY, EMAIL text NOT NULL)";
+        String sql3 = "INSERT INTO EMAIL (ID, EMAIL) VALUES (1, 'test@gmail.com')";
         try (Connection conn = this.connect();
-            java.sql.Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery(sql)){
+            Statement stmt = conn.createStatement()){
+            stmt.execute(sql);
+            stmt.execute(sql2);
+            stmt.execute(sql3);
+            
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        String sqlView = "SELECT * FROM EMAIL";
+        try (Connection conn = this.connect();
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(sqlView)){
             // Se itera sobre los registros
             while (rs.next()) {
-                System.out.println(rs.getInt("Id") + " => " +
-                rs.getString("Name") + " => " +
-                rs.getString("Apellidos") + " => " +
-                rs.getString("Departamento"));
+                System.out.println(rs.getInt("ID") + " => " +
+                rs.getString("EMAIL"));
             }   
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
+        
     }
 
 }
