@@ -7,15 +7,22 @@ package kata5;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.List;
 
 /**
  *
  * @author Eduardo
  */
 public class SelectApp {
+    private final List<String> lista;
+
+    public SelectApp(List<String> lista) {
+        this.lista = lista;
+    }
 
     private Connection connect() {
 
@@ -28,29 +35,42 @@ public class SelectApp {
         }
         return conn;
     }
-    @SuppressWarnings("empty-statement")
-    public void selectAll(){
-        String sql = "DROP TABLE IF EXISTS EMAIL";
-        String sql2 = "CREATE TABLE IF NOT EXISTS EMAIL (ID int NOT NULL PRIMARY KEY, EMAIL text NOT NULL)";
-        String sql3 = "INSERT INTO EMAIL (ID, EMAIL) VALUES (1, 'test@gmail.com')";
-        try (Connection conn = this.connect();
-            Statement stmt = conn.createStatement()){
+    public void createNewTableEmail() {
+        String sql = "CREATE TABLE IF NOT EXISTS EMAIL (\n"
+                + " id integer PRIMARY KEY AUTOINCREMENT,\n"
+                + " direccion text NOT NULL);";
+        try (Connection conn = this.connect()) {
+            Statement stmt = conn.createStatement();
+            // Se crea la nueva tabla
             stmt.execute(sql);
-            stmt.execute(sql2);
-            stmt.execute(sql3);
-            
+            System.out.println("Tabla creada");
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
+    }
+    public void insert(){
+        String sql = "INSERT INTO EMAIL(direccion) VALUES(?)";
+        try  (Connection conn = this.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)){
+             for (String string : lista) {
+                  pstmt.setString(1,string);
+                  pstmt.executeUpdate();
+             }
+        }catch (SQLException e){
+            System.out.println(e.getMessage());
+        }
+    }
+    public void list(){
         String sqlView = "SELECT * FROM EMAIL";
         try (Connection conn = this.connect();
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery(sqlView)){
-            // Se itera sobre los registros
+            int i = 0;
             while (rs.next()) {
-                System.out.println(rs.getInt("ID") + " => " +
-                rs.getString("EMAIL"));
+                System.out.println(rs.getString("direccion"));
+                i++;
             }   
+            System.out.println("Nº de direcciones introducidas en la base de datos: " + i);
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
